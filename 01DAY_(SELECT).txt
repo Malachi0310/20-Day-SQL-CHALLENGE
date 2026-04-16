@@ -15,7 +15,7 @@ VALUES
     (102, 'Bob Smith', 'Marketing', 62000, '2022-06-01', 3),
     (103, 'Charlie Doe', 'Engineering', 92000, '2020-11-20', 4),
     (104, 'Dana White', 'Sales', 55000, '2023-01-10', 4),
-    (105, 'Eli Manning', 'Marketing', 68000, '2021-09-25', 2);
+    (105, 'Eli Manning', NULL, 68000, '2021-09-25', 2);
     
 SELECT * FROM Employees;
 
@@ -31,5 +31,25 @@ SELECT * FROM Employees
 WHERE Department = "Marketing" AND 
 PerformanceRating >= 3;
 
-select name, Department, Salary * 1.20 as NewSalary, PerformanceRating + 5 as NewPerformance
-from Employees;
+SELECT name, Department, Salary * 1.20  NewSalary, PerformanceRating + 5  NewPerformance
+FROM Employees;
+
+SELECT Name, Department, Salary
+FROM Employees
+ORDER BY  Name ASC;
+
+SELECT Name, Salary
+FROM Employees
+ORDER By Salary DESC; 
+
+SELECT Name, HireDate, Department
+FROM Employees
+ORDER BY HireDate DESC;
+
+SELECT Name, Department, Salary 
+FROM Employees
+ORDER BY Department ASC, Salary DESC;
+
+SELECT Name, Department
+FROM Employees 
+ORDER BY Department IS NULL, Department DESC;
