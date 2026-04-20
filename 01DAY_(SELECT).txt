@@ -1,55 +1,91 @@
--- 1. Create the table structure
-CREATE TABLE Employees (
-    EmployeeID INT PRIMARY KEY,
-    Name VARCHAR(100),
-    Department VARCHAR(50),
-    Salary INT,
-    HireDate DATE,
-    PerformanceRating INT
+CREATE TABLE Categories (
+    category_id INT PRIMARY KEY,
+    category_name VARCHAR(50),
+    region VARCHAR(50)
 );
 
--- 2. Insert the sample data
-INSERT INTO Employees (EmployeeID, Name, Department, Salary, HireDate, PerformanceRating)
-VALUES 
-    (101, 'Alice Chen', 'Engineering', 85000, '2021-03-15', 5),
-    (102, 'Bob Smith', 'Marketing', 62000, '2022-06-01', 3),
-    (103, 'Charlie Doe', 'Engineering', 92000, '2020-11-20', 4),
-    (104, 'Dana White', 'Sales', 55000, '2023-01-10', 4),
-    (105, 'Eli Manning', NULL, 68000, '2021-09-25', 2);
-    
-SELECT * FROM Employees;
+CREATE TABLE Products (
+    product_id INT PRIMARY KEY,
+    product_name VARCHAR(50),
+    category_id INT,
+    price DECIMAL(10, 2)
+);
 
-SELECT Name, Department FROM Employees;
+CREATE TABLE Orders (
+    order_id INT PRIMARY KEY,
+    customer_name VARCHAR(50),
+    product_id INT,
+    quantity INT,
+    order_date DATE
+);
 
-SELECT Name FROM Employees
-WHERE Department = "Engineering";
+-- Insert Sample Data
+INSERT INTO Categories VALUES (1, 'Electronics', 'North'), (2, 'Furniture', 'South'), (3, 'Clothing', 'East');
+INSERT INTO Products VALUES (101, 'Laptop', 1, 1200), (102, 'Phone', 1, 800), (103, 'Chair', 2, 150), (104, 'Desk', 2, 300), (105, 'T-Shirt', 3, 25);
+INSERT INTO Orders VALUES 
+(1, 'Alice', 101, 1, '2024-01-01'), (2, 'Bob', 102, 2, '2024-01-02'), 
+(3, 'Alice', 103, 1, '2024-01-03'), (4, 'Charlie', 101, 1, '2024-01-04'),
+(5, 'Bob', 105, 10, '2024-01-05'), (6, 'David', 104, 2, '2024-01-06');
 
-SELECT * FROM Employees 
-WHERE Salary > 70000;
+SELECT * FROM Categories;
+SELECT * FROM Orders;
+SELECT * FROM Products;
 
-SELECT * FROM Employees
-WHERE Department = "Marketing" AND 
-PerformanceRating >= 3;
+-- customers by revenue
+SELECT 
+    o.customer_name, 
+    SUM(o.quantity * p.price) AS total_revenue
+FROM Orders o
+JOIN Products p ON o.product_id = p.product_id
+GROUP BY o.customer_name
+HAVING SUM(o.quantity * p.price) > 0
+ORDER BY total_revenue DESC;
 
-SELECT name, Department, Salary * 1.20  NewSalary, PerformanceRating + 5  NewPerformance
-FROM Employees;
+-- Revenue per region
+SELECT 
+    c.region, 
+    SUM(o.quantity * p.price) AS regional_revenue
+FROM Orders o
+JOIN Products p ON o.product_id = p.product_id
+JOIN Categories c ON p.category_id = c.category_id
+GROUP BY c.region
+HAVING regional_revenue > 500;
 
-SELECT Name, Department, Salary
-FROM Employees
-ORDER BY  Name ASC;
+-- Most Sold Product per Category
+SELECT 
+    c.category_name, 
+    p.product_name, 
+    SUM(o.quantity) AS total_sold
+FROM Categories c
+JOIN Products p ON c.category_id = p.category_id
+JOIN Orders o ON p.product_id = o.product_id
+GROUP BY c.category_name, p.product_name
+ORDER BY total_sold DESC;
 
-SELECT Name, Salary
-FROM Employees
-ORDER By Salary DESC; 
+-- High-Value Regions: List all regions that have generated more than $1,000 in total revenue.
+SELECT 
+    c.region, 
+    SUM(o.quantity * p.price) AS total_revenue
+FROM Categories c
+JOIN Products p ON c.category_id = p.category_id
+JOIN Orders o ON p.product_id = o.product_id
+GROUP BY c.region
+HAVING SUM(o.quantity * p.price) > 1000;
 
-SELECT Name, HireDate, Department
-FROM Employees
-ORDER BY HireDate DESC;
+-- Product Popularity: Find the names of products that have been ordered more than 5 times across all orders.
+SELECT 
+    p.product_name, 
+    SUM(o.quantity) AS total_units_sold
+FROM Products p
+JOIN Orders o ON p.product_id = o.product_id
+GROUP BY p.product_name
+HAVING SUM(o.quantity) > 5;
 
-SELECT Name, Department, Salary 
-FROM Employees
-ORDER BY Department ASC, Salary DESC;
-
-SELECT Name, Department
-FROM Employees 
-ORDER BY Department IS NULL, Department DESC;
+-- Customer Diversity: Find customers who have purchased items from more than one unique category
+SELECT 
+    o.customer_name, 
+    COUNT(DISTINCT p.category_id) AS unique_categories_bought
+FROM Orders o
+JOIN Products p ON o.product_id = p.product_id
+GROUP BY o.customer_name
+HAVING COUNT(DISTINCT p.category_id) > 1;
